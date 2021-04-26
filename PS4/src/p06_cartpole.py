@@ -1,8 +1,12 @@
 from __future__ import division, print_function
-from env import CartPole, Physics
+
+import random
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import lfilter
+
+from env import CartPole, Physics
 
 """
 Parts of the code (cart and pole dynamics, and the state
@@ -78,6 +82,7 @@ initial learning quickly, and start the display only after the
 performance is reasonable.
 """
 
+
 def initialize_mdp_data(num_states):
     """
     Return a variable that contains all the parameters/state you need for your MDP.
@@ -111,6 +116,7 @@ def initialize_mdp_data(num_states):
         'num_states': num_states,
     }
 
+
 def choose_action(state, mdp_data):
     """
     Choose the next action (0 or 1) that is optimal according to your current
@@ -125,9 +131,13 @@ def choose_action(state, mdp_data):
     """
 
     # *** START CODE HERE ***
+    exploration_rate = 0.1
+    if random.random() < exploration_rate:
+        return random.randint(0,1)
     expected_val = mdp_data['value'].dot(mdp_data['transition_probs'][state])
     return np.argmax(expected_val)
     # *** END CODE HERE ***
+
 
 def update_mdp_transition_counts_reward_counts(mdp_data, state, action, new_state, reward):
     """
@@ -162,6 +172,7 @@ def update_mdp_transition_counts_reward_counts(mdp_data, state, action, new_stat
     # This function does not return anything
     return
 
+
 def update_mdp_transition_probs_reward(mdp_data):
     """
     Update the estimated transition probabilities and reward values in your MDP.
@@ -185,7 +196,7 @@ def update_mdp_transition_probs_reward(mdp_data):
     num_states = transition_counts.shape[0]
     for i in range(num_states):
         for a in range(2):
-            if  num_counts[i, a]  != 0:
+            if num_counts[i, a] != 0:
                 mdp_data['transition_probs'][i, :, a] = transition_counts[i, :, a] / num_counts[i, a]
 
     reward_counts = mdp_data['reward_counts']
@@ -197,6 +208,7 @@ def update_mdp_transition_probs_reward(mdp_data):
 
     # This function does not return anything
     return
+
 
 def update_mdp_value(mdp_data, tolerance, gamma):
     """
@@ -236,9 +248,10 @@ def update_mdp_value(mdp_data, tolerance, gamma):
     return it == 1
     # *** END CODE HERE ***
 
+
 def main(plot=True):
     # Seed the randomness of the simulation so this outputs the same thing each time
-    seed = 0
+    seed = 3
     np.random.seed(seed)
 
     # Simulation parameters
@@ -352,9 +365,9 @@ def main(plot=True):
         log_tstf = np.log(np.array(time_steps_to_failure))
         plt.plot(np.arange(len(time_steps_to_failure)), log_tstf, 'k')
         window = 30
-        w = np.array([1/window for _ in range(window)])
+        w = np.array([1 / window for _ in range(window)])
         weights = lfilter(w, 1, log_tstf)
-        x = np.arange(window//2, len(log_tstf) - window//2)
+        x = np.arange(window // 2, len(log_tstf) - window // 2)
         plt.plot(x, weights[window:len(log_tstf)], 'r--')
         plt.xlabel('Num failures')
         plt.ylabel('Log of num steps to failure')
@@ -362,6 +375,7 @@ def main(plot=True):
         plt.savefig('output/control_{}.png'.format(seed))
 
     return np.array(time_steps_to_failure)
-    
+
+
 if __name__ == '__main__':
     main()
